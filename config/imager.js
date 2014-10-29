@@ -25,6 +25,11 @@ module.exports = {
   },
 
   storage: {
+    Local: {
+      provider: 'local',
+      path: 'public/uploaded',
+      mode: 0777
+    },
     S3: {
       key: process.env.IMAGER_S3_KEY,
       secret: process.env.IMAGER_S3_SECRET,

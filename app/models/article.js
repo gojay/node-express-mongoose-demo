@@ -5,12 +5,16 @@
 
 var mongoose = require('mongoose');
 var Imager = require('imager');
-var config = require('config');
+var config = require('../../config');
 
 var imagerConfig = require(config.root + '/config/imager.js');
 var utils = require('../../lib/utils');
 
 var Schema = mongoose.Schema;
+
+console.log('root', config.root);
+console.log('imagerConfig', imagerConfig.storage.Local);
+
 
 /**
  * Getters
@@ -61,7 +65,7 @@ ArticleSchema.path('body').required(true, 'Article body cannot be blank');
  */
 
 ArticleSchema.pre('remove', function (next) {
-  var imager = new Imager(imagerConfig, 'S3');
+  var imager = new Imager(imagerConfig, 'Local');
   var files = this.image.files;
 
   // if there are files associated with the item, remove from the cloud too
@@ -89,7 +93,7 @@ ArticleSchema.methods = {
   uploadAndSave: function (images, cb) {
     if (!images || !images.length) return this.save(cb)
 
-    var imager = new Imager(imagerConfig, 'S3');
+    var imager = new Imager(imagerConfig, 'Local');
     var self = this;
 
     this.validate(function (err) {
@@ -97,6 +101,9 @@ ArticleSchema.methods = {
       imager.upload(images, function (err, cdnUri, files) {
         if (err) return cb(err);
         if (files.length) {
+          if(!cdnUri) {
+            cdnUri = '/uploaded';
+          }
           self.image = { cdnUri : cdnUri, files : files };
         }
         self.save(cb);
